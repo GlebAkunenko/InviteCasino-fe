@@ -63,6 +63,12 @@ input {
     transition: 0.3s;
 }
 
+/* Поля ввода */
+input.phone {
+    width: 300px;
+}
+
+
 @keyframes borderAnimation {
     0% { border-color: #00ff00 }
     50% { border-color: #00f170

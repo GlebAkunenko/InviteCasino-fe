@@ -1,13 +1,103 @@
+const API = "localhost:8000"
+
 document.addEventListener("DOMContentLoaded", () => {
-    let balance = 1000;
-    let bet = 10;
+    let balance = 0;
+    let userName = '';
 
-    const balanceInput = document.getElementById('balance');
-    const betInput = document.getElementById('bet');
-    const playButton = document.getElementById('playButton');
-    const carousel = document.getElementById('carousel');
+    let balanceInput, playButton, betInput;
+    const nameInput = document.getElementById('name');
+    const authButton = document.getElementById('authButton');
 
-    balanceInput.value = balance;
+    authButton.addEventListener('click', () => {
+        nameInput.disabled = true;
+        userName = nameInput.value.trim();
+        fetch(`http://${API}/user?user=${userName}`, { // Замените на ваш endpoint
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                const block = document.createElement('div');
+                block.innerHTML = `
+                    <div class="input-group">
+                        <label for="balance">Баланс: </label>
+                        <input type="text" id="balance" value="0" disabled>
+                    </div>
+                    <div class="input-group">
+                        <label for="bet">Ставка: </label>
+                        <input type="number" id="bet" value="0">
+                    </div>
+                `;
+                document.getElementById("panel").appendChild(block);
+                playButton = document.createElement('button');
+                playButton.classList.add('button');
+                playButton.textContent = 'Играть';
+                playButton.addEventListener('click', () => {
+                    const bet = parseInt(betInput.value)
+                    if (bet > balance) {
+                        alert('Недостаточно средств для ставки');
+                        return;
+                    }
+
+                    // Отправка ставки на сервер (API)
+                    fetch(`http://${API}/play?user=${userName}&bet=${bet}`, { // Замените на ваш endpoint
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            createCards(data.slots);
+                            playButton.disabled = true; // Отключаем кнопку
+                            startScrolling(data.win); // Запускаем анимацию прокрутки
+                        })
+                        .catch(error => {
+                            console.error('Ошибка:', error);
+                        });
+
+                    // Уменьшаем баланс на ставку
+                    balance -= bet;
+                    balanceInput.value = balance;
+                });
+
+                function updateBalance() {
+                    if (!playButton.disabled) {
+                        fetchBalance();
+                    }
+                }
+
+                updateBalance();
+                setInterval(updateBalance, 1000);
+
+                document.getElementById('playButtonPlace').appendChild(playButton);
+                authButton.remove();
+
+                balanceInput = document.getElementById('balance');
+                betInput = document.getElementById('bet');
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+    });
+
+    function fetchBalance() {
+        fetch(`http://${API}/balance?user=${userName}`, { // Замените на ваш endpoint
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => response.text()).then(data => {
+                balance = parseInt(data);
+                balanceInput.value = data;
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+            });
+    }
+
 
     function createCards(cardsData) {
         while (carousel.firstChild) {
@@ -25,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Функция для анимации прокрутки
     function startScrolling(win) {
         // Время для прокрутки, которое будет уменьшаться
-        let speed = 20; // Начальная скорость прокрутки (меньше - быстрее)
+        let speed = 25; // Начальная скорость прокрутки (меньше - быстрее)
         let position = 0;
 
         // Функция, которая прокручивает карточки
@@ -33,9 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
             position -= speed; // смещение карточек
             carousel.style.transform = `translateX(${position}px)`;
 
-            speed *= 0.99
+            speed *= 0.98
             // Если прокрутка не завершена, продолжаем анимацию
-            if (speed > 0.5) {
+            if (speed > 0.05) {
                 requestAnimationFrame(moveCards);
             } else {
                 playButton.disabled = false;
@@ -49,36 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
         moveCards();
     }
 
-
-    // Обработчик для кнопки "Играть"
-    playButton.addEventListener('click', () => {
-        const bet = parseInt(betInput.value)
-        if (bet > balance) {
-            alert('Недостаточно средств для ставки');
-            return;
-        }
-
-        // Отправка ставки на сервер (API)
-        fetch(`http://localhost:8000/play?bet=${bet}`, { // Замените на ваш endpoint
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                createCards(data.slots);
-                playButton.disabled = true; // Отключаем кнопку
-                startScrolling(data.win); // Запускаем анимацию прокрутки
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-            });
-
-        // Уменьшаем баланс на ставку
-        balance -= bet;
-        balanceInput.value = balance;
-    });
 
 
 });

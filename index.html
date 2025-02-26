@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игра на баланс</title>
+    <title>/random</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <h1>/random</h1>
-    <div class="input-group">
-        <label for="balance">Баланс: </label>
-        <input type="text" id="balance" value="1000" disabled>
-    </div>
-    <div class="input-group">
-        <label for="bet">Ставка: </label>
-        <input type="number" id="bet" value="10">
+<div id="root" class="container">
+    <h1>Игра на баллы</h1>
+    <div id="panel">
+        <div id="auth-block">
+            <label for="name">Номер телефона: </label>
+            <input class="input phone" id="name">
+            <button id="authButton">войти</button>
+        </div>
     </div>
 
     <div class="container">
@@ -23,8 +22,7 @@
             <!-- Здесь будут карточки -->
         </div>
 
-        <div class="controls">
-            <button id="playButton">Играть</button>
+        <div id="playButtonPlace">
         </div>
     </div>
 </div>
