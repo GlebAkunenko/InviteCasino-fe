@@ -123,9 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
             position -= speed; // смещение карточек
             carousel.style.transform = `translateX(${position}px)`;
 
-            speed *= 0.98
+            speed *= 0.996
             // Если прокрутка не завершена, продолжаем анимацию
-            if (speed > 0.05) {
+            if (speed > 0.35) {
                 requestAnimationFrame(moveCards);
             } else {
                 playButton.disabled = false;
